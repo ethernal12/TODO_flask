@@ -16,7 +16,6 @@ class Todo(db.Model):
 @app.route('/')
 def index():
     todo_list = Todo.query.all()
-    print(todo_list)
     return render_template('base.html', todo_list=todo_list)
 
 
@@ -44,7 +43,7 @@ def delete(todo_id):
 @app.route('/About')
 def about():
     # show all TODOS
-    return 'About'
+    return {'Data' : 'About page'}
 
 
 if __name__ == '__main__':
