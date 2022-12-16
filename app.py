@@ -1,10 +1,16 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from jinja2 import Environment
 
 app = Flask(__name__)
+# Add the enumerate function to the jinja2 environment
+app.jinja_env.globals.update(enumerate=enumerate)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+# Create an empty list to store our
+todo_list = []
 
 
 class Todo(db.Model):
@@ -13,37 +19,58 @@ class Todo(db.Model):
     cpmplete = db.Column(db.Boolean)
 
 
-@app.route('/')
+@app.route('/', methods=["POST","GET","PUT"])
 def index():
-    todo_list = Todo.query.all()
-    return render_template('base.html', todo_list=todo_list)
+    response = request.args.get('Response', None)
+    print(response, 'from index')
+    return render_template('base.html', todo_list=todo_list), response
 
 
-@app.route("/add", methods=["GET","POST"])
-def add():
+# add one item
+@app.route("/todos", methods=["POST"])
+def post_todo():
     title = request.form.get("title")
-    new_todo = Todo(title=title, cpmplete=False)
-    db.session.add(new_todo)
-    db.session.commit()
+    print(title)
+    todo_list.append(title)
+    return redirect(url_for('index', Response=title))
+
+
+# update item
+@app.route("/todos/<int:todo_id>", methods=["POST"])
+def update_todo(todo_id):
+
+    title = request.form.get('title')
+    print(title , 'update')
+    # Update the item in your list here
+    todo_list[todo_id] = title
+
     return redirect(url_for("index"))
 
-@app.route("/update/<int:todo_id>")
-def update(todo_id):
-    todo = Todo.query.filter_by(id=todo_id).first()
-    todo.cpmplete = not todo.cpmplete
-    db.session.commit()
-    return redirect(url_for("index"))
 
-@app.route("/delete/<int:todo_id>")
-def delete(todo_id):
-    todo = Todo.query.filter_by(id=todo_id).first()
-    db.session.delete(todo)
-    db.session.commit()
-    return redirect(url_for("index"))
+# delete item
+@app.route("/todo/<int:todo_id>", methods=[ 'POST'])
+def delete_todo(todo_id):
+    title = todo_list[todo_id]
+    del todo_list[todo_id]
+
+    return redirect(url_for("index"), Response=title)
+
+
+# get  one item
+@app.route("/todos/<int:todo_id>", methods=["GET"])
+def get_todo(todo_id):
+    return {"title": todo_list[todo_id]}
+
+
+# get all items
+@app.route("/todos/", methods=["GET"])
+def get_todos():
+    return todo_list
+
+
 @app.route('/About')
 def about():
-    # show all TODOS
-    return {'Data' : 'About page'}
+    return {'Data': 'About page'}
 
 
 if __name__ == '__main__':
