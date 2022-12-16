@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <title>TODO app</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
     <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
 </head>
 <body>
-<div class ="ui container" style="margin-top: 50px" >
+
+<div class="ui container" style="margin-top: 50px">
     <h1 class=" ui center aligned header">TODO app</h1>
-    <form class=" ui form" action="/add" method="post">
+    <form class=" ui form" action="/todos" method="post">
         <div class="fields">
             <label for="title">TODO title</label>
             <input type="text" name="title" placeholder="Enter TODO...">
@@ -18,18 +20,22 @@
         </div>
 
     </form>
-    {% for todo in todo_list %}
-    <p class="ui big header">{{todo.id}} | {{todo.title}}</p>
-    <div class="ui segment">
-        {% if todo.cpmplete == False %}
-        <span class="ui gray label">Not completed</span>
-        {% else %}
-        <span class="ui green label">Completed</span>
-        {% endif %}
-        <a class="ui blue button" href="/update/{{todo.id}}">Update</a>
-        <a class="ui red button" href="/delete/{{todo.id}}">Delete</a>
-    </div>
-    {% endfor %}
+    <h1 class="ui big header">To-Do List</h1>
+    <ul>
+        {% for index, task in enumerate(todo_list): %}
+
+        <li class="fields">{{ task }}</li>
+        <form action="/todos/{{index}}" method="post">
+            <input type="text" name="title">
+            <input type="submit" value="update todo name">
+        </form>
+        <form action="/todo/{{index}}" method="post">
+            <input type="hidden" name="id" value="{{index}}">
+            <button class="ui red button" type="submit">Delete</button>
+        </form>
+
+        {% endfor %}
+    </ul>
 </div>
 </body>
 </html>
