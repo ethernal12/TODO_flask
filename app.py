@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
 from jinja2 import Environment
 
@@ -19,7 +19,7 @@ class Todo(db.Model):
     cpmplete = db.Column(db.Boolean)
 
 
-@app.route('/', methods=["POST","GET","PUT"])
+@app.route('/', methods=["POST", "GET", "PUT"])
 def index():
     response = request.args.get('Response', None)
     print(response, 'from index')
@@ -27,28 +27,27 @@ def index():
 
 
 # add one item
-@app.route("/todos", methods=["POST"])
-def post_todo():
+@app.route("/todos", methods=["POST", "PUT"])
+def add_todo():
     title = request.form.get("title")
-    print(title)
     todo_list.append(title)
-    return redirect(url_for('index', Response=title))
+
+    return render_template('base.html', todo_list=todo_list)
 
 
 # update item
-@app.route("/todos/<int:todo_id>", methods=["POST"])
+@app.route("/todos/<int:todo_id>", methods=["POST","PUT"])
 def update_todo(todo_id):
-
+    print('update!!!!!!!!!!!!!!!!!!!!!')
     title = request.form.get('title')
-    print(title , 'update')
+    print(title, 'update')
     # Update the item in your list here
     todo_list[todo_id] = title
-
     return redirect(url_for("index"))
 
 
 # delete item
-@app.route("/todo/<int:todo_id>", methods=[ 'POST'])
+@app.route("/todo/<int:todo_id>", methods=['POST', 'DELETE'])
 def delete_todo(todo_id):
     title = todo_list[todo_id]
     del todo_list[todo_id]
@@ -56,10 +55,12 @@ def delete_todo(todo_id):
     return redirect(url_for("index"), Response=title)
 
 
+
 # get  one item
 @app.route("/todos/<int:todo_id>", methods=["GET"])
 def get_todo(todo_id):
-    return {"title": todo_list[todo_id]}
+    print(todo_list)
+    return jsonify({'title': todo_list[todo_id]})
 
 
 # get all items
